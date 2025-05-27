@@ -1,7 +1,7 @@
 ﻿cmake_minimum_required(VERSION 3.15)
 
 # enter your project name/application output name
-project(osu LANGUAGES CXX)
+project(template LANGUAGES CXX)
 
 set(CMAKE_CXX_STANDARD 20) #cpp version
 set(CMAKE_CXX_SCAN_FOR_MODULES ON)
