@@ -42,7 +42,7 @@
                 "CMAKE_BUILD_TYPE": "Release"
             }
         },
-x        {
+        {
             "name": "linux-base",
             "hidden": true,
             "generator": "Ninja",
