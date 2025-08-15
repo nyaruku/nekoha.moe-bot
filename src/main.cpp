@@ -1,5 +1,7 @@
 #include <iostream>
 #include <string>
+#include <thread>
+#include <chrono>
 
 // D++ (C++ Discord Bot Library)
 #include <dpp/dpp.h>
@@ -17,18 +19,24 @@
 #include "commands.h"
 
 ormpp::dbng<ormpp::mysql> mysql;
-bool connected(){
-    mysql.connect(
-        config::mysql::host
-        ,config::mysql::username
-        ,config::mysql::password
-        ,config::mysql::database
-    );
+
+void mysqlConnect() {
+    while (true) {
+        std::cout << "Connecting to Database, HOST: " <<  config::mysql::host << " | DB: " << config::mysql::database << "\n";
+        if (mysql.connect(config::mysql::host, config::mysql::username, config::mysql::password ,config::mysql::database)) {
+            std::cout << "Connected to MySQL Server\n";
+            break;
+        };
+        std::cout << "Failed to connect to MySQL Server...\n";
+        std::this_thread::sleep_for(std::chrono::milliseconds(2000));
+    }
 }
 
 int main() {
-    sio::client client;
 
+    mysqlConnect();
+
+    sio::client client;
     std::map<std::string, std::string> headers = {
         {"Authorization", "Bearer " + config::websocket::secret}
     };
