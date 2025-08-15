@@ -13,21 +13,31 @@ include(FetchContent)
 set(BASE_INCLUDE_PATH "${CMAKE_SOURCE_DIR}/src/includes")
 set(BASE_LIB_PATH "${CMAKE_SOURCE_DIR}/src/libs")
 
+set(ENABLE_MYSQL ON)
+add_definitions(-DORMPP_ENABLE_MYSQL)
+
 set(sioclient "${CMAKE_SOURCE_DIR}/src/libs/libsioclient.a")
 
 # STATIC LIB, you are a stupid fuck if u dont
 option(USE_STATIC_LIB "Use static library" ON)
 
-add_executable(${PROJECT_NAME} src/main.cpp)
-
 find_package(DPP REQUIRED)
+find_package(Threads REQUIRED)
+find_package(OpenSSL REQUIRED)
+
+find_path(MYSQL_INCLUDE_DIR mysql.h PATH_SUFFIXES mysql)
+find_library(MYSQL_LIBRARIES mysqlclient)
+
+add_executable(${PROJECT_NAME} src/main.cpp)
 
 target_link_libraries(${PROJECT_NAME} PRIVATE 
     dpp
     ${sioclient}
-    ssl     #openssl
-    crypto  #libcrypto
+    ${MYSQL_LIBRARIES}
     z       #zlib
+    Threads::Threads
+    OpenSSL::Crypto
+    OpenSSL::SSL
 )
 
 # Debug/Release-specific paths
@@ -38,6 +48,7 @@ endif()
 
 target_include_directories(${PROJECT_NAME} PRIVATE
     ${DPP_INCLUDE_DIR}
+    ${MYSQL_INCLUDE_DIR}
 )
 
 # Add the include directories for the project

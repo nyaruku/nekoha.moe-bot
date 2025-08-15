@@ -1,10 +1,30 @@
 #include <iostream>
 #include <string>
+
+// D++ (C++ Discord Bot Library)
 #include <dpp/dpp.h>
+
+// Socket IO Client
 #include <socket_io_client/sio_client.h>
 
+// ormpp
+#include <ormpp/dbng.hpp>
+#include <ormpp/mysql.hpp>
+#include <ormpp/connection_pool.hpp>
+
+// Headers
 #include "config.h"
 #include "commands.h"
+
+ormpp::dbng<ormpp::mysql> mysql;
+bool connected(){
+    mysql.connect(
+        config::mysql::host
+        ,config::mysql::username
+        ,config::mysql::password
+        ,config::mysql::database
+    );
+}
 
 int main() {
     sio::client client;
