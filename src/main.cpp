@@ -5,13 +5,16 @@
 #include <chrono>
 #include <regex>
 
-// D++ (C++ Discord Bot Library)
+// DPP (Discord Bot Library)
 #include <dpp/dpp.h>
 
 // Socket IO Client
 #include <socket_io_client/sio_client.h>
 
-// ormpp
+// json
+#include <nlohmann/json.hpp>
+
+// ormpp (database connector)
 #include <ormpp/dbng.hpp>
 #include <ormpp/mysql.hpp>
 #include <ormpp/connection_pool.hpp>
@@ -53,24 +56,21 @@ REGISTER_AUTO_KEY(chat_record, id)
 YLT_REFL(chat_record, id, timestamp, username, message, discord, color)
 
 std::atomic<bool> ws_running{true};
-std::mutex ws_mutex;
+std::atomic<bool> ws_reconnect{true};
 
-std::thread websocketThread(sio::client& client, const sio::message::ptr& auth_msg, const std::map<std::string, std::string>& headers, dpp::cluster& bot) {
+std::thread websocketThread(sio::client& client, dpp::cluster& bot) {
     return std::thread([&]() {
         try {
             client.set_fail_listener([&]() {
                 std::cerr << "Socket connect error\n";
             });
 
-            client.set_reconnect_attempts(-1);
-            client.set_reconnect_delay(2000);
+            client.set_close_listener([&](sio::client::close_reason const& reason) {
+                std::cout << "Socket Client Disconnected\n";
+            });
 
             client.socket(config::websocket::path)->on("connect", [&](sio::event&) {
                 std::cout << "Connected to website WebSocket\n";
-                {
-                    std::lock_guard<std::mutex> lock(ws_mutex);
-                    client.socket(config::websocket::path)->emit("auth", auth_msg);
-                }
             });
 
             client.socket(config::websocket::path)->on("new_message", [&](sio::event& ev) {
@@ -87,16 +87,17 @@ std::thread websocketThread(sio::client& client, const sio::message::ptr& auth_m
                 std::string message = msg->get_map()["message"]->get_string();
                 bot.message_create(
                     dpp::message(config::bot::websiteChannelId, 
-                        "[" + extension::sanitizeDiscordMentions(username) + "] " + extension::sanitizeDiscordMentions(message))
+                    "[" + extension::sanitizeDiscordMentions(username) + "] " + extension::sanitizeDiscordMentions(message))
                 );
             });
 
             client.socket(config::websocket::path)->on("disconnect", [&](sio::event&) {
                 std::cout << "Disconnected from website WebSocket\n";
             });
+            
 
-            client.connect(config::websocket::url, {}, headers);
-
+            client.connect(config::websocket::url, {{"token", config::websocket::secret}});
+            
             while (ws_running) {
                 std::this_thread::sleep_for(std::chrono::seconds(5));
             }
@@ -112,13 +113,7 @@ int main() {
     mysqlConnect();
 
     sio::client client;
-    std::map<std::string, std::string> headers = {
-        {"Authorization", "Bearer " + config::websocket::secret}
-    };
 
-    sio::message::ptr auth_msg = sio::object_message::create();
-    auth_msg->get_map()["token"] = sio::string_message::create(config::websocket::secret);
-    
     dpp::cluster bot(config::bot::token, dpp::i_default_intents | dpp::i_message_content);
     bot.on_log(dpp::utility::cout_logger());
 
@@ -138,25 +133,18 @@ int main() {
             std::string color = "#5865F2";
 
         try {
-            // ORM insert (no raw SQL strings, no manual quoting)
             chat_record row {
-                0,
-                static_cast<long long>(timestamp),
-                username,
-                content,
-                1,
-                color
+                0
+                ,static_cast<long long>(timestamp)
+                ,username
+                ,content
+                ,1
+                ,color
             };
 
-            const int inserted = mysql.insert(row);
-            if (inserted != 1) {
-                throw std::runtime_error("insert failed");
-            }
-
-            // Correct usage: pass the same object and the template type
-            auto newId = mysql.get_insert_id_after_insert<chat_record>(row);
-
-            // Build message for WebSocket
+            // SQL Insert and returns id of row
+            uint64_t newId = mysql.get_insert_id_after_insert<chat_record>(row);
+            
             sio::message::ptr newMessage = sio::object_message::create();
             newMessage->get_map()["id"] = sio::int_message::create(newId);
             newMessage->get_map()["timestamp"] = sio::int_message::create(timestamp);
@@ -164,9 +152,10 @@ int main() {
             newMessage->get_map()["message"] = sio::string_message::create(content);
             newMessage->get_map()["discord"] = sio::int_message::create(1);
             newMessage->get_map()["color"] = sio::string_message::create(color);
-            client.socket(config::websocket::path)->emit("new_message", newMessage);
-            std::cout << "Sent message to WebSocket\n";
 
+            client.socket(config::websocket::path)->emit("new_message", newMessage);
+
+            std::cout << "Sent message to WebSocket\n";  
         } 
         catch (const std::exception& e) {
             std::cerr << "DB insert error: " << e.what() << std::endl;
@@ -174,12 +163,12 @@ int main() {
     }});
 
     // Start WebSocket thread (connects & listens)
-    auto ws_thread = websocketThread(client, auth_msg, headers, bot);
+    auto ws_thread = websocketThread(client, bot);
 
     // Blocking Discord Bot Thread
     bot.start(dpp::st_wait);
-   
-    ws_running = true;
+    ws_reconnect = false;
+    ws_running = false;
     client.sync_close();
     ws_thread.join();
     return 0;
