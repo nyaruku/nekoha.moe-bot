@@ -1,7 +1,7 @@
 #!/bin/bash
 
 echo "Checking for existing bot instances..."
-pkill -f "nekoha.moe-bot"
+pkill -x "nekoha.moe-bot"
 
 while true; do
     echo "Starting Bot..."
