@@ -1,9 +1,9 @@
 #include <iostream>
-#include <cstdint>
 #include <string>
 #include <thread>
 #include <chrono>
 #include <regex>
+#include <vector>
 
 // Socket IO Client
 #include <socket_io_client/sio_client.h>
@@ -27,7 +27,7 @@ int main() {
     // Blocked if one of those cant connect, but should never happen
     db::nekoha_moe::connect();
     db::osu_logger::connect();
-
+    
     // Start WebSocket thread (connects & listens)
     auto ws_thread = socket_io::websocketThread(client, discord_bot::bot);
 
