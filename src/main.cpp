@@ -20,7 +20,6 @@ std::atomic<bool> ws_reconnect{true};
 #include "db.h"
 #include "bot.h"
 #include "socket.h"
-#include "commands.h"
 
 int main() {
 

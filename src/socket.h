@@ -36,7 +36,9 @@ namespace socket_io {
                     std::cout << "Disconnected from website WebSocket\n";
                 });
                 
-
+                client.set_reconnect_attempts(-1);      // infinite retries
+                client.set_reconnect_delay(2000);       // 2s before first retry
+                client.set_reconnect_delay_max(5000);  // cap retry backoff at 5s
                 client.connect(config::websocket::url, {{"token", config::websocket::secret}});
                 
                 while (ws_running) {
