@@ -25,7 +25,7 @@ namespace ping {
         std::string description;
 
         if (args.size() == 1) {
-            description = "```Discord API Latency: " + network::ping::latency("discord.com") + " ms```";
+            description = "```" + network::ping::latency("discord.com") + "```";
         } else {
             description = "```" + network::ping::latency(args[1]) + "```";
         }
