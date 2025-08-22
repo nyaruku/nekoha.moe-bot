@@ -14,7 +14,7 @@ std::atomic<bool> ws_reconnect{true};
 // Discord Bot Library
 #include <dpp/dpp.h>
 
-// Headers
+// header
 #include "config.h"
 #include "extension.h"
 #include "db.h"

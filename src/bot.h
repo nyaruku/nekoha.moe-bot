@@ -61,8 +61,7 @@ namespace discord_bot {
                 while (iss >> token) {
                     args.push_back(token);
                 }
-
-                if(args[0][0] == config::bot::prefix[0]) {            
+                if (args[0][0] == config::bot::prefix[0]) {            
                     // remove prefx
                     args[0].erase(args[0].begin());
                     command_handler::embedResult parsedCommand = command_handler::commandParser(bot, event, args);

@@ -17,11 +17,11 @@ namespace help {
             
         dpp::embed embed = dpp::embed().
         set_color(config::bot::embedColor).
+        set_title("Help").
         set_description(
             "`" + config::bot::prefix + name + " {command}`\n"
-            + "To get specific help about a command."
-        ).
-        set_timestamp(time(0));
+            + "```To get specific help about a command.```"
+        );
         return embed;
     }
     
@@ -34,18 +34,16 @@ namespace help {
         
         description
         += "`" + config::bot::prefix + command_handler::registeredCommands[0].cmdName + "`"
-        + " or `" + config::bot::prefix + command_handler::registeredCommands[0].cmdAlias + "`" 
-        + " `" + command_handler::registeredCommands[0].cmdHelpDesc + "`";
+        + " or `" + config::bot::prefix + command_handler::registeredCommands[0].cmdAlias + "`\n" 
+        + "```" + command_handler::registeredCommands[0].cmdHelpDesc + "```";
         
         for (size_t i = 1; i < command_handler::registeredCommands.size(); i++) {
             description 
             += "\n`" + config::bot::prefix + command_handler::registeredCommands[i].cmdName + "`"
-            + " or `" + config::bot::prefix + command_handler::registeredCommands[i].cmdAlias + "`" 
-            + " `" + command_handler::registeredCommands[i].cmdHelpDesc + "`";
+            + " or `" + config::bot::prefix + command_handler::registeredCommands[i].cmdAlias + "`\n" 
+            + "```" + command_handler::registeredCommands[i].cmdHelpDesc + "```";
         }
-        
         embed.set_description(description);
-        embed.set_timestamp(time(0));
         return embed;
     }
 
