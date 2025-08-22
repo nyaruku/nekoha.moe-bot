@@ -61,12 +61,15 @@ namespace discord_bot {
                 while (iss >> token) {
                     args.push_back(token);
                 }
-                command_handler::embedResult parsedCommand = command_handler::commandParser(bot, event, args);
-                if(parsedCommand.valid == false){
-                    
+
+                if(args[0][0] == config::bot::prefix[0]) {            
+                    // remove prefx
+                    args[0].erase(args[0].begin());
+                    command_handler::embedResult parsedCommand = command_handler::commandParser(bot, event, args);
+                    dpp::message msg(parsedCommand.embed);
+                    event.reply(msg, true);                    
                 }
-                //dpp::message msg(response);
-                //event.reply(msg, true);
+                // no callback, since message is not starting with prefix
             }
         });
     }

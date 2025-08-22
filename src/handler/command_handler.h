@@ -13,41 +13,22 @@ namespace command_handler {
 
     extern const std::vector<command> registeredCommands;
 
-    enum callbackReason {
-        noValidPrefix = 0
-        ,noValidCommand = 1
-    };
-
-    std::string callbackReasonString(callbackReason reason, std::string info) {
-        switch(reason) {
-            case callbackReason::noValidCommand: return "Command doesn't exist: ";
-        }
-        return "";
-    }
-
     struct embedResult {
         dpp::embed embed;
-        bool valid;
-        callbackReason reason;
-        std::string info = "";
     };
 
-    inline embedResult commandParser(dpp::cluster &bot, const dpp::message_create_t& event, std::vector<std::string>args) {
-        if(args[0][0] != config::bot::prefix[0]) {            
-            // no callback, since message is not starting with prefix
-            return {dpp::embed(), false, callbackReason::noValidPrefix};
-        }
-
-        // remove prefx
-        args[0].erase(args[0].begin());
-
+    inline embedResult commandParser(dpp::cluster &bot, const dpp::message_create_t& event, std::vector<std::string> args) {
         for(size_t i = 0; i < registeredCommands.size(); i++) {
             if(args[0] == registeredCommands[i].cmdName || args[0] == registeredCommands[i].cmdAlias) {
-                return {registeredCommands[i].parseArgs(bot,event,args), true};
+                return {registeredCommands[i].parseArgs(bot,event,args)};
             }
         }
-
-        // No valid command found, return with assumed command
-        return {dpp::embed(), false, callbackReason::noValidCommand, args[0]};
+        // No valid command found
+        dpp::embed embed = dpp::embed().
+        set_color(config::bot::embedColorErr).
+        set_description(
+            "```Command not found: " + args[0] + "```"
+        );
+        return {embed};
     }
 }
