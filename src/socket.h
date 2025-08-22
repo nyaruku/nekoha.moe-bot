@@ -46,7 +46,8 @@ namespace socket_io {
                 }
 
             } catch (const std::exception& e) {
-                std::cerr << "WebSocket exception: " << e.what() << std::endl;
+                std::cout << "WebSocket exception: " << e.what() << std::endl;
+                // maybe restart ws client after exception ??, idk
             }
         });
     }

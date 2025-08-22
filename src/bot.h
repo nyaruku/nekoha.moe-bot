@@ -12,7 +12,8 @@ namespace discord_bot {
         });
 
         bot.on_message_create([](const dpp::message_create_t& event) {
-            if (event.msg.author.is_bot()) return;
+            // Also prevents that bot messages will be send over socket
+            if (event.msg.author.is_bot()) return;            
 
             if (event.msg.channel_id == config::bot::websiteChannelId) {
                 uint64_t timestamp = std::chrono::duration_cast<std::chrono::milliseconds>(
@@ -51,9 +52,21 @@ namespace discord_bot {
                     std::cerr << "DB insert error: " << e.what() << std::endl;
                 }
             } else {
-                dpp::embed response = command_handler::commandParser(event);
-                dpp::message msg(response);
-                event.reply(msg, true);
+                std::string originalMessage = event.msg.content;
+                originalMessage = extension::collapseSpaces(originalMessage);
+                originalMessage = extension::trim(originalMessage);
+                std::vector<std::string> args;
+                std::istringstream iss(originalMessage);
+                std::string token;
+                while (iss >> token) {
+                    args.push_back(token);
+                }
+                command_handler::embedResult parsedCommand = command_handler::commandParser(bot, event, args);
+                if(parsedCommand.valid == false){
+                    
+                }
+                //dpp::message msg(response);
+                //event.reply(msg, true);
             }
         });
     }

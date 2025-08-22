@@ -28,7 +28,10 @@ find_package(OpenSSL REQUIRED)
 find_path(MYSQL_INCLUDE_DIR mysql.h PATH_SUFFIXES mysql)
 find_library(MYSQL_LIBRARIES mysqlclient)
 
-add_executable(${PROJECT_NAME} src/main.cpp)
+add_executable(${PROJECT_NAME}
+    src/main.cpp
+    src/handler/command_handler.cpp
+)
 
 target_link_libraries(${PROJECT_NAME} PRIVATE 
     dpp

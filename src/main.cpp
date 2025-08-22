@@ -23,7 +23,7 @@ std::atomic<bool> ws_reconnect{true};
 
 int main() {
 
-    // Blocked if one of those cant connect, but should never happen
+    // Blocked if one of those cant connect, but should never happen, unless....
     db::nekoha_moe::connect();
     db::osu_logger::connect();
     
