@@ -1,21 +1,29 @@
-class config {
-public:
-    struct bot {
-        static inline std::string token = "";
-        static inline std::string prefix = ",";
-        static inline std::string websiteChannelId = "";
-    };
+namespace config {
+    namespace bot {
+        const static std::string token = "";
+        const static std::string prefix = ",";
+        const static dpp::snowflake websiteChannelId = ;
+        const static uint32_t embedColor = 0x0AF;
+        const static uint32_t embedColorErr = 0xF00;
+    }
     
-    struct mysql {
-        static inline std::string host = "";
-        static inline std::string database = "";
-        static inline std::string username = "";
-        static inline std::string password = "";
-    };
+    namespace mysql {
+        const static std::string host = "";
+        const static std::string username = "";
+        const static std::string password = "";
+        
+        namespace nekoha_moe {
+            const static std::string database = "";
+        }
 
-    struct websocket {
-        static inline std::string url = "";
-        static inline std::string path = "";
-        static inline std::string secret = "";
-    };
-};
+        namespace osu_logger {
+            const static std::string database = "";
+        }
+    }
+
+    namespace websocket {
+        const static std::string url = "";
+        const static std::string path = "";
+        const static std::string secret = "";
+    }
+}
